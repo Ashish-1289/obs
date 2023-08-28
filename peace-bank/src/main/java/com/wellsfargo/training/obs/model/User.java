@@ -1,5 +1,7 @@
 package com.wellsfargo.training.obs.model;
 
+import java.sql.Date;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 //import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -34,9 +36,12 @@ public class User {
 	private String moname;
 	@Column(unique = true)
 	private String email;
-	
+	@Column(unique = true)
+	private String aadhar;
+	@Column(unique = true)
+	private long phno;
 	@JsonFormat(pattern = "yyyy-MM-dd")
-	private String dob;
+	private Date dob;
 	
 	@Column(name = "Source_of_income")
 	private String soi;
@@ -50,6 +55,8 @@ public class User {
 	@Column(name = "account_balance")
 	@NonNull
 	private long abalance;
+	
+	private boolean status;
 
 	@OneToOne(mappedBy = "user" , cascade = CascadeType.ALL)
 	private Address address;

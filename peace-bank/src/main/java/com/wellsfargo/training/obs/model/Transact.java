@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import io.micrometer.common.lang.NonNull;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -43,4 +44,7 @@ public class Transact {
 	private String remarks;
 	
 	private String transactType;
+	@NonNull
+	@Column(unique = true)
+	private long transactionNumber;
 }

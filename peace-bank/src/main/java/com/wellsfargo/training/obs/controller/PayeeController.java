@@ -23,7 +23,7 @@ import com.wellsfargo.training.obs.service.UserLoginService;
 import com.wellsfargo.training.obs.service.UserService;
 
 @RestController
-@RequestMapping(value = "api/payee")
+@RequestMapping(value = "/api/payee")
 public class PayeeController {
 	@Autowired
 	private PayeeService pservice;

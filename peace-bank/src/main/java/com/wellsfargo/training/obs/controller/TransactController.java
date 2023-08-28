@@ -1,8 +1,11 @@
 package com.wellsfargo.training.obs.controller;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wellsfargo.training.obs.dto.BalanceUpdate;
+import com.wellsfargo.training.obs.dto.ShowTransaction;
 import com.wellsfargo.training.obs.dto.Transaction;
 import com.wellsfargo.training.obs.model.Transact;
 import com.wellsfargo.training.obs.model.User;
@@ -35,8 +39,17 @@ public class TransactController {
 		this.ulservice = ulservice;
 		this.uservice = uservice;
 	}
+	public static long generateRandom(int length) {
+	    Random random = new Random();
+	    char[] digits = new char[length];
+	    digits[0] = (char) (random.nextInt(9) + '1');
+	    for (int i = 1; i < length; i++) {
+	        digits[i] = (char) (random.nextInt(10) + '0');
+	    }
+	    return Long.parseLong(new String(digits));
+	}
 	
-	@PutMapping()
+	@PutMapping
 	public ResponseEntity <?> createTransact(@Validated @RequestBody Transaction transact){
 		
 		long amount = transact.getAmount();
@@ -75,6 +88,7 @@ public class TransactController {
 		t.setAmount(amount);
 		t.setBenName(transact.getBenName());
 		t.setFromAcc(fromaccount);
+		t.setTransactionNumber(generateRandom(10));
 		t.setToAcc(toaccount);
 		t.setNickName(transact.getNickName());
 		t.setRemarks(transact.getRemarks());
@@ -111,11 +125,40 @@ public class TransactController {
 		uservice.registerUser(u);
 		return ResponseEntity.ok("Balance updated successfully");		
 	}
+	
 	@GetMapping("/{id}")
-	public List<Transact> getTransactions(@PathVariable(value = "id") long id){
-		
-		UserLogin ul = ulservice.findUser(id);
+	public ResponseEntity<?> getTransactions(@PathVariable(value = "id") long id){
+		UserLogin ul = new UserLogin();
+		try {
+			ul = ulservice.findUser(id);
+		}
+		catch(Exception e){
+			return new ResponseEntity<String>("Error :" + e.getMessage() , HttpStatus.BAD_REQUEST);
+		}
+		List <ShowTransaction> l = new ArrayList<ShowTransaction>();
+		List<Transact> t = new ArrayList<Transact>();
 		long account = ul.getUs().getAnumber();
-		return tservice.showTransact(account);
+		try {
+			t = tservice.showTransact(account);
+		}
+		catch(Exception e) {
+			return new ResponseEntity<String>("Error :" + e.getMessage() , HttpStatus.BAD_REQUEST);
+		}
+		t = tservice.showTransact(account);
+		for(int i=0;i<t.size();i++) {
+			if(t.get(i).getFromAcc() == account) {
+				ShowTransaction s = new ShowTransaction();
+				s.setT(t.get(i));
+				s.setTransType("Debit");
+				l.add(s);
+			}
+			else {
+				ShowTransaction s = new ShowTransaction();
+				s.setT(t.get(i));
+				s.setTransType("Credit");
+				l.add(s);
+			}
+		}
+		return ResponseEntity.ok(l);
 	}
 }

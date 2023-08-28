@@ -1,6 +1,5 @@
 package com.wellsfargo.training.obs.controller;
 
-import org.apache.el.stream.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,7 @@ public class UserLoginController {
 	@Autowired
 	public UserLoginService ulservice;
 	private UserService uservice;
-	private ObjectMapper objectMapper;
+	private ObjectMapper objectMapper;  //this is used to map fields with respective variables
 	
 	public UserLoginController(UserLoginService userlservice , UserService uservice) {
 		super();
@@ -40,23 +39,31 @@ public class UserLoginController {
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
 	
+	//when there are more fields than that are in model it throws a error so jsonNode is used to take the data and object mapper is used to map it.
+	
+	
 	@PostMapping("/account")
 	public ResponseEntity<String> Account( @RequestBody JsonNode jsonNode)throws JsonMappingException, JsonProcessingException{
 		
-		
-		try {
+		long account = jsonNode.get("anumber").asLong();
+		try {   // it tries to fetch the user linked with account number if its null it throws a exception
 			User u= uservice.fetchUser(jsonNode.get("anumber").asLong());
 			UserLogin ul = objectMapper.treeToValue(jsonNode, UserLogin.class);
 			ul.setUs(u);
 			ulservice.registerUser(ul);
 		}
-		catch (Exception e) {
+		catch (Exception e) {  //it catches the error and prints it
 			return new ResponseEntity<>("Error Message "+e.getMessage(),HttpStatus.BAD_REQUEST);
 		}
-			return new ResponseEntity<>("User Created Succesfully \nUser Id is", HttpStatus.CREATED);
+		User u = uservice.fetchUser(account);
+		if(!u.isStatus()) {
+			return ResponseEntity.badRequest().body("Not approved by the Admin, please contact Admin");
+		}
+			return new ResponseEntity<>("User Created Succesfully", HttpStatus.CREATED);
 	}
 	
 	@PostMapping("/login")
+	
 	public LoginResult Login(@Validated @RequestBody UserLogin u) throws ResourceNotFoundException 
 	{
 		Boolean a = false;
@@ -65,7 +72,7 @@ public class UserLoginController {
 		String Password = u.getPassword();
 		
 		UserLogin ul = ulservice.loginUser(UserName).orElseThrow(()->
-		new ResourceNotFoundException("User not found for this id :: "));
+		new ResourceNotFoundException("User not found for this id "));
 		
 		long accountnumber = ul.getUs().getAnumber();
 		long id = ul.getUs().getId();
@@ -73,12 +80,12 @@ public class UserLoginController {
 		if(UserName.equals(ul.getUsername()) && Password.equals(ul.getPassword())) {
 			a = true;
 		}
+		// A custom made datatype object to return required fields to the front end.
 		LoginResult lr = new LoginResult();
 		lr.setSuccess(a);
 		lr.setAccountNumber(accountnumber);
 		lr.setId(id);
 		return lr;
-}
-//	@GetMapping("/login/{id}")
-//	public 
+	}
+ 
 }

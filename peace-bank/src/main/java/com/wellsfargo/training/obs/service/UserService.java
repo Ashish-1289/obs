@@ -1,5 +1,6 @@
 package com.wellsfargo.training.obs.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,5 +29,14 @@ public class UserService {
 	public User fetchUserByEmail(String email) {
 		Optional<User> u = userrepo.findByEmail(email);
 		return u.get();
+	}
+	public List<User> getAllUsers(){
+		return userrepo.findAll();
+	}
+	public List<User> getAllUsersStatus(){
+		return userrepo.findByStatusFalse();
+	}
+	public void deleteUser(Long id) {
+		userrepo.deleteById(id);
 	}
 }

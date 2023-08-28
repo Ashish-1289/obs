@@ -3,7 +3,9 @@ package com.wellsfargo.training.obs.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,8 +15,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wellsfargo.training.obs.model.User;
+import com.wellsfargo.training.obs.model.UserLogin;
 import com.wellsfargo.training.obs.service.EmailService;
 import com.wellsfargo.training.obs.service.OtpService;
+import com.wellsfargo.training.obs.service.UserLoginService;
 import com.wellsfargo.training.obs.service.UserService;
 
 @RestController
@@ -26,14 +30,17 @@ public class ForgotPasswordController {
 	private OtpService otpService;
 	@Autowired
 	private EmailService emailService;
+	@Autowired
+	private UserLoginService ulservice;
 	
 	private ObjectMapper objectMapper;
 	
-	public ForgotPasswordController(UserService uservice , OtpService otpService , EmailService emailService) {
+	public ForgotPasswordController(UserService uservice , OtpService otpService , EmailService emailService, UserLoginService ulservice) {
 		super();
 		this.emailService = emailService;
 		this.otpService = otpService;
 		this.uservice = uservice;
+		this.ulservice = ulservice;
 		objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 	}
@@ -80,7 +87,16 @@ public class ForgotPasswordController {
 			return ResponseEntity.badRequest().body("Invalid Otp");
 		}
 		otpService.clearOtp(email);
-		return ResponseEntity.ok("OTP verified successfully");
+		User p = uservice.fetchUserByEmail(email);
+		long id = p.getUserlogin().getLoginid();
+		return ResponseEntity.ok("id :" + id);
 	}
 	
+	@PutMapping(value = "/{id}")
+	public ResponseEntity<?> resetPassword(@PathVariable(value = "id") long Aid , @RequestBody JsonNode jsonNode){
+		String password = jsonNode.get("newPassword").asText();
+		UserLogin ul = ulservice.findUser(Aid);
+		ul.setPassword(password);
+		return ResponseEntity.ok("Password updated Successfully");
+	}
 }
