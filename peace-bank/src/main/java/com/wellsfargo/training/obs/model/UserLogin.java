@@ -12,10 +12,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Setter
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
+//@Setter
+//@Getter
+//@NoArgsConstructor
+//@AllArgsConstructor
 public class UserLogin {
 
 	@Id
@@ -39,5 +39,51 @@ public class UserLogin {
         normalString.getBytes(StandardCharsets.UTF_8) );
         this.password = encodedString;
 	}
-	
+
+	public UserLogin() {
+	}
+
+	public UserLogin(long loginid, long tpin, User us, String password, String username) {
+		this.loginid = loginid;
+		this.tpin = tpin;
+		this.us = us;
+		this.password = password;
+		this.username = username;
+	}
+
+	public long getLoginid() {
+		return loginid;
+	}
+
+	public void setLoginid(long loginid) {
+		this.loginid = loginid;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public long getTpin() {
+		return tpin;
+	}
+
+	public void setTpin(long tpin) {
+		this.tpin = tpin;
+	}
+
+	public User getUs() {
+		return us;
+	}
+
+	public void setUs(User us) {
+		this.us = us;
+	}
 }
